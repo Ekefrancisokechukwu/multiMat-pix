@@ -1,11 +1,65 @@
 import { ArrowDownToLine, Upload } from "lucide-react";
+import { useCallback, useState } from "react";
+
+const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const Welcome = () => {
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files are allowed.");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      alert("Image must be less than 10MB.");
+      return;
+    }
+  }, []);
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        alert("Only image files are allowed.");
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        alert("Image must be less than 10MB.");
+        return;
+      }
+
+      // Valid file: handle it here
+      console.log("Valid file selected:", file);
+    },
+    []
+  );
+
   return (
     <div className="mt-[7rem]">
       <div className="text-center">
         <h1 className="font-bold text-4xl text-stone-700">
-          Convert and Edit Your Images
+          Convert Your Images
         </h1>
         <p className="text-gray-600 mt-2">
           Upload your image to convert it into multiple formats
@@ -13,18 +67,36 @@ const Welcome = () => {
       </div>
 
       <div className="mt-5">
-        <div className="max-w-[45rem] px-8 py-[3rem] bg-white border-2 rounded-lg mx-auto border-dashed transition-all hover:border-gray-400 border-gray-300">
+        {/* file upload */}
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`max-w-[45rem] px-8 py-[3rem] border-2 rounded-lg mx-auto border-dashed transition-all  ${isDragOver ? "border-[#FFCD76] bg-[#FAF4E9]" : "hover:border-gray-400 border-gray-300 bg-white "}`}
+        >
           <div className="text-center grid place-items-center">
             {/* <Upload className="text-gray-500 " /> */}
             <p className="mt-3 text-lg text-stone-700 font-semibold">
               Drag and drop your image here
             </p>
             <p className="text-stone-600">or click to browse files</p>
-            <button className="bg-stone-700 text-white mt-3.5 hover:bg-stone-800 text-sm font-medium px-3 py-1.5 rounded-lg inline-flex items-center">
+            <label
+              htmlFor="image-upload"
+              tabIndex={0}
+              className="bg-stone-700 cursor-pointer text-white mt-3.5 hover:bg-stone-800 text-sm font-medium px-3 py-1.5 rounded-lg inline-flex items-center"
+            >
               Browse files
-            </button>
+              <input
+                onChange={handleFileChange}
+                type="file"
+                accept="image/*"
+                name="upload-images"
+                id="image-upload"
+                className="sr-only"
+              />
+            </label>
             <p className="text-xs text-stone-500 mt-5">
-              Supports JPG, PNG, GIF, BMP up to 10MB
+              Supports JPG, PNG up to 10MB
             </p>
           </div>
         </div>

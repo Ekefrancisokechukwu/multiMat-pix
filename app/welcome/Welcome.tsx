@@ -50,7 +50,10 @@ const Welcome = () => {
       alert("Image must be less than 10MB.");
       return;
     }
-    window.scrollBy({ behavior: "smooth", top: 500 });
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: "smooth",
+    });
     setIspending(true);
     try {
       const data = await uploadImage(file);
@@ -76,7 +79,10 @@ const Welcome = () => {
       alert("Image must be less than 10MB.");
       return;
     }
-    window.scrollBy({ behavior: "smooth", top: 500 });
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: "smooth",
+    });
 
     setIspending(true);
     try {

@@ -79,6 +79,7 @@ const Welcome = () => {
       alert("Image must be less than 10MB.");
       return;
     }
+
     window.scrollTo({
       top: document.body.scrollHeight,
       behavior: "smooth",
@@ -181,6 +182,12 @@ const Welcome = () => {
                     className="w-full object-cover h-full"
                   />
                 </div>
+                <p className="mt-3 text-gray-600 text-sm">
+                  size:{" "}
+                  {results.formats.webp.sizeInBytes > 1024 * 1024
+                    ? `${(results.formats.webp.sizeInBytes / (1024 * 1024)).toFixed(2)} MB`
+                    : `${(results.formats.webp.sizeInBytes / 1024).toFixed(2)} KB`}
+                </p>
               </div>
 
               {/* Jpeg */}
@@ -207,6 +214,12 @@ const Welcome = () => {
                     className="w-full object-cover h-full"
                   />
                 </div>
+                <p className="mt-3 text-gray-600 text-sm">
+                  size:{" "}
+                  {results.formats.jpeg.sizeInBytes > 1024 * 1024
+                    ? `${(results.formats.jpeg.sizeInBytes / (1024 * 1024)).toFixed(2)} MB`
+                    : `${(results.formats.jpeg.sizeInBytes / 1024).toFixed(2)} KB`}
+                </p>
               </div>
               {/* png */}
               <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
@@ -232,6 +245,12 @@ const Welcome = () => {
                     className="w-full object-cover h-full"
                   />
                 </div>
+                <p className="mt-3 text-gray-600 text-sm">
+                  size:{" "}
+                  {results.formats.png.sizeInBytes > 1024 * 1024
+                    ? `${(results.formats.png.sizeInBytes / (1024 * 1024)).toFixed(2)} MB`
+                    : `${(results.formats.png.sizeInBytes / 1024).toFixed(2)} KB`}
+                </p>
               </div>
               {/* avif */}
               <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
@@ -257,6 +276,12 @@ const Welcome = () => {
                     className="w-full object-cover h-full"
                   />
                 </div>
+                <p className="mt-3 text-gray-600 text-sm">
+                  size:{" "}
+                  {results.formats.avif.sizeInBytes > 1024 * 1024
+                    ? `${(results.formats.avif.sizeInBytes / (1024 * 1024)).toFixed(2)} MB`
+                    : `${(results.formats.avif.sizeInBytes / 1024).toFixed(2)} KB`}
+                </p>
               </div>
             </div>
           )

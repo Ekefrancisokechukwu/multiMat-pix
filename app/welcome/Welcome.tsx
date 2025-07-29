@@ -34,7 +34,7 @@ const Welcome = () => {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
 
@@ -49,6 +49,17 @@ const Welcome = () => {
     if (file.size > MAX_FILE_SIZE_BYTES) {
       alert("Image must be less than 10MB.");
       return;
+    }
+    window.scrollBy({ behavior: "smooth", top: 500 });
+    setIspending(true);
+    try {
+      const data = await uploadImage(file);
+      setResults(data);
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Upload failed");
+    } finally {
+      setIspending(false);
     }
   }, []);
 

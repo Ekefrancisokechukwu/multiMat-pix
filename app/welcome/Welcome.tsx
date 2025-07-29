@@ -1,6 +1,6 @@
 import { uploadImage } from "lib/format";
 import { ArrowDownToLine, Upload } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router";
 
 const MAX_FILE_SIZE_MB = 10;
@@ -21,6 +21,8 @@ const Welcome = () => {
   }>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -52,7 +54,7 @@ const Welcome = () => {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !containerRef) return;
 
     if (!file.type.startsWith("image/")) {
       alert("Only image files are allowed.");
@@ -63,6 +65,7 @@ const Welcome = () => {
       alert("Image must be less than 10MB.");
       return;
     }
+    window.scrollBy({ behavior: "smooth", top: 500 });
 
     setIspending(true);
     try {
@@ -124,7 +127,7 @@ const Welcome = () => {
         </div>
       </div>
 
-      <div className="mt-[8rem] max-w-[75rem] mx-auto pb-10">
+      <div ref={containerRef} className="mt-[8rem] max-w-[75rem] mx-auto pb-10">
         <h5 className="font-semibold text-stone-700 text-xl">
           {isPending
             ? "Processing..."

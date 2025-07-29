@@ -127,7 +127,7 @@ const Welcome = () => {
       <div className="mt-[8rem] max-w-[75rem] mx-auto pb-10">
         <h5 className="font-semibold text-stone-700 text-xl">
           {isPending
-            ? "Converting..."
+            ? "Processing..."
             : results !== null && "Converted Formats"}
         </h5>
         {isPending ? (
@@ -170,9 +170,15 @@ const Welcome = () => {
                   <span className="bg-gray-100 p-2 rounded-3xl text-sm">
                     Jpeg
                   </span>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <a
+                    href={`${BASE_URL}/download/${results.formats.jpeg.path.split("/").pop()}`}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
                     <ArrowDownToLine size={18} />
-                  </button>
+                  </a>
                 </div>
                 <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
                   <img
@@ -189,9 +195,15 @@ const Welcome = () => {
                   <span className="bg-gray-100 p-2 rounded-3xl text-sm">
                     png
                   </span>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <a
+                    href={`${BASE_URL}/download/${results.formats.png.path.split("/").pop()}`}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
                     <ArrowDownToLine size={18} />
-                  </button>
+                  </a>
                 </div>
                 <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
                   <img
@@ -208,9 +220,15 @@ const Welcome = () => {
                   <span className="bg-gray-100 p-2 rounded-3xl text-sm">
                     avif
                   </span>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <a
+                    href={`${BASE_URL}/download/${results.formats.avif.path.split("/").pop()}`}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
                     <ArrowDownToLine size={18} />
-                  </button>
+                  </a>
                 </div>
                 <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
                   <img

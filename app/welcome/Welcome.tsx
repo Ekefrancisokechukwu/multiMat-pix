@@ -1,10 +1,25 @@
+import { uploadImage } from "lib/format";
 import { ArrowDownToLine, Upload } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Link } from "react-router";
 
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
+export type FileType = {
+  path: string;
+  sizeInBytes: number;
+};
+
+const BASE_URL = "https://multimat-pix-server.onrender.com";
+
 const Welcome = () => {
+  const [isPending, setIspending] = useState(false);
+  const [results, setResults] = useState<null | {
+    original: string;
+    formats: { [key: string]: FileType };
+  }>(null);
+
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -20,6 +35,7 @@ const Welcome = () => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
+
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
@@ -34,26 +50,31 @@ const Welcome = () => {
     }
   }, []);
 
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      if (!file.type.startsWith("image/")) {
-        alert("Only image files are allowed.");
-        return;
-      }
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files are allowed.");
+      return;
+    }
 
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        alert("Image must be less than 10MB.");
-        return;
-      }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      alert("Image must be less than 10MB.");
+      return;
+    }
 
-      // Valid file: handle it here
-      console.log("Valid file selected:", file);
-    },
-    []
-  );
+    setIspending(true);
+    try {
+      const data = await uploadImage(file);
+      setResults(data);
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Upload failed");
+    } finally {
+      setIspending(false);
+    }
+  };
 
   return (
     <div className="mt-[7rem]">
@@ -72,8 +93,9 @@ const Welcome = () => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`max-w-[45rem] px-8 py-[3rem] border-2 rounded-lg mx-auto border-dashed transition-all  ${isDragOver ? "border-[#FFCD76] bg-[#FAF4E9]" : "hover:border-gray-400 border-gray-300 bg-white "}`}
+          className={`max-w-[45rem] px-8 relative py-[3rem] border-2 rounded-lg mx-auto border-dashed transition-all  ${isDragOver ? "border-[#FFCD76] bg-[#FAF4E9]" : "hover:border-gray-400 border-gray-300 bg-white "}`}
         >
+          {isPending && <div className="absolute inset-0 bg-white/70 z-20" />}
           <div className="text-center grid place-items-center">
             {/* <Upload className="text-gray-500 " /> */}
             <p className="mt-3 text-lg text-stone-700 font-semibold">
@@ -104,55 +126,103 @@ const Welcome = () => {
 
       <div className="mt-[8rem] max-w-[75rem] mx-auto pb-10">
         <h5 className="font-semibold text-stone-700 text-xl">
-          Converted Formats
+          {isPending
+            ? "Converting..."
+            : results !== null && "Converted Formats"}
         </h5>
-        <div className="mt-5 flex items-center gap-4">
-          {/* WebP */}
-          <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
-            <div className="flex items-center justify-between">
-              {" "}
-              <span className="bg-gray-100 p-2 rounded-3xl text-sm">WebP</span>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <ArrowDownToLine size={18} />
-              </button>
-            </div>
-            <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg"></div>
+        {isPending ? (
+          <div className="h-[13rem] grid place-items-center">
+            <div className="size-[8rem] border-5 animate-spin !ease-out rounded-full border-r-gray-400 border-gray-200" />
           </div>
+        ) : (
+          results !== null && (
+            <div className="mt-5 flex items-center gap-4">
+              {/* WebP */}
+              <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
+                <div className="flex items-center justify-between">
+                  {" "}
+                  <span className="bg-gray-100 p-2 rounded-3xl text-sm">
+                    WebP
+                  </span>
+                  <a
+                    href={`${BASE_URL}/download/${results.formats.webp.path.split("/").pop()}`}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <ArrowDownToLine size={18} />
+                  </a>
+                </div>
+                <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
+                  <img
+                    src={`${BASE_URL}${results.formats.webp.path}`}
+                    alt=""
+                    className="w-full object-cover h-full"
+                  />
+                </div>
+              </div>
 
-          {/* Jpeg */}
-          <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
-            <div className="flex items-center justify-between">
-              {" "}
-              <span className="bg-gray-100 p-2 rounded-3xl text-sm">Jpeg</span>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <ArrowDownToLine size={18} />
-              </button>
+              {/* Jpeg */}
+              <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
+                <div className="flex items-center justify-between">
+                  {" "}
+                  <span className="bg-gray-100 p-2 rounded-3xl text-sm">
+                    Jpeg
+                  </span>
+                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                    <ArrowDownToLine size={18} />
+                  </button>
+                </div>
+                <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
+                  <img
+                    src={`${BASE_URL}${results.formats.jpeg.path}`}
+                    alt=""
+                    className="w-full object-cover h-full"
+                  />
+                </div>
+              </div>
+              {/* png */}
+              <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
+                <div className="flex items-center justify-between">
+                  {" "}
+                  <span className="bg-gray-100 p-2 rounded-3xl text-sm">
+                    png
+                  </span>
+                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                    <ArrowDownToLine size={18} />
+                  </button>
+                </div>
+                <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
+                  <img
+                    src={`${BASE_URL}${results.formats.png.path}`}
+                    alt=""
+                    className="w-full object-cover h-full"
+                  />
+                </div>
+              </div>
+              {/* avif */}
+              <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
+                <div className="flex items-center justify-between">
+                  {" "}
+                  <span className="bg-gray-100 p-2 rounded-3xl text-sm">
+                    avif
+                  </span>
+                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                    <ArrowDownToLine size={18} />
+                  </button>
+                </div>
+                <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg">
+                  <img
+                    src={`${BASE_URL}${results.formats.avif.path}`}
+                    alt=""
+                    className="w-full object-cover h-full"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg"></div>
-          </div>
-          {/* png */}
-          <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
-            <div className="flex items-center justify-between">
-              {" "}
-              <span className="bg-gray-100 p-2 rounded-3xl text-sm">png</span>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <ArrowDownToLine size={18} />
-              </button>
-            </div>
-            <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg"></div>
-          </div>
-          {/* avif */}
-          <div className="p-3 bg-white w-max  border border-gray-300 rounded-xl">
-            <div className="flex items-center justify-between">
-              {" "}
-              <span className="bg-gray-100 p-2 rounded-3xl text-sm">avif</span>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <ArrowDownToLine size={18} />
-              </button>
-            </div>
-            <div className="h-[10rem] w-[15rem] bg-gray-100 mt-3 rounded-lg"></div>
-          </div>
-        </div>
+          )
+        )}
       </div>
     </div>
   );
